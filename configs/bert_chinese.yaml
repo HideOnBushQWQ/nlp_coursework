@@ -1,0 +1,31 @@
+# BERT中文NER配置文件
+model:
+    name: 'bert'
+    type: 'bert'
+    pretrained_model: 'bert-base-chinese'
+    num_labels: 9 # O + B/I * 4类实体 (PER, LOC, ORG, MISC)
+    dropout: 0.1
+    use_crf: true
+
+training:
+    batch_size: 16
+    learning_rate: 3e-5
+    num_epochs: 10
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+    max_grad_norm: 1.0
+    patience: 3 # 早停耐心值
+
+data:
+    language: 'chinese'
+    train_file: 'data/raw/chinese/train.txt'
+    dev_file: 'data/raw/chinese/dev.txt'
+    test_file: 'data/raw/chinese/test.txt'
+    max_length: 128
+
+output:
+    save_dir: 'experiments/bert_chinese'
+    log_file: 'experiments/bert_chinese/training.log'
+
+device: 'cuda' # 或 "cpu"
+seed: 42

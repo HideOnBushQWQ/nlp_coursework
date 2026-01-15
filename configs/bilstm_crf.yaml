@@ -1,0 +1,34 @@
+# BiLSTM-CRF基线模型配置
+model:
+    name: 'bilstm_crf'
+    type: 'bilstm'
+    vocab_size: 5000
+    embedding_dim: 300
+    hidden_dim: 256
+    num_layers: 2
+    dropout: 0.5
+    num_labels: 9
+    use_pretrained_embeddings: false
+
+training:
+    batch_size: 32
+    learning_rate: 1e-3
+    num_epochs: 20
+    warmup_ratio: 0.0
+    weight_decay: 1e-5
+    max_grad_norm: 5.0
+    patience: 5
+
+data:
+    language: 'chinese' # 或 "english"
+    train_file: 'data/raw/chinese/train.txt'
+    dev_file: 'data/raw/chinese/dev.txt'
+    test_file: 'data/raw/chinese/test.txt'
+    max_length: 128
+
+output:
+    save_dir: 'experiments/bilstm_crf'
+    log_file: 'experiments/bilstm_crf/training.log'
+
+device: 'cuda'
+seed: 42

@@ -1,0 +1,31 @@
+# RoBERTa英文NER配置文件
+model:
+    name: 'roberta'
+    type: 'roberta'
+    pretrained_model: 'roberta-base'
+    num_labels: 9
+    dropout: 0.1
+    use_crf: true
+
+training:
+    batch_size: 16
+    learning_rate: 2e-5
+    num_epochs: 10
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+    max_grad_norm: 1.0
+    patience: 3
+
+data:
+    language: 'english'
+    train_file: 'data/raw/english/train.txt'
+    dev_file: 'data/raw/english/dev.txt'
+    test_file: 'data/raw/english/test.txt'
+    max_length: 128
+
+output:
+    save_dir: 'experiments/roberta_english'
+    log_file: 'experiments/roberta_english/training.log'
+
+device: 'cuda'
+seed: 42
