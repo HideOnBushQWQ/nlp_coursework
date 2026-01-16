@@ -9,7 +9,7 @@
 ## ✨ 主要特性
 
 - 🌏 **双语支持**：同时支持中文和英文文本的命名实体识别
-- 🤖 **多模型**：实现了BERT、RoBERTa和BiLSTM-CRF三种模型
+- 🤖 **多模型**：设计了BERT、RoBERTa和BiLSTM-CRF三种模型，由于设备限制，只实现了BERT的训练和推理
 - 📊 **完整流程**：从数据预处理到模型部署的端到端解决方案
 - 📈 **可视化**：丰富的训练过程和结果可视化功能
 - ⚙️ **配置驱动**：使用YAML文件管理实验配置，便于复现
@@ -73,8 +73,14 @@ python scripts/train.py --config configs/bert_chinese.yaml
 # 训练英文BERT模型
 python scripts/train.py --config configs/bert_english.yaml
 
-# 训练RoBERTa模型
+# 训练RoBERTa中文模型
 python scripts/train.py --config configs/roberta_chinese.yaml
+
+# 训练RoBERTa英文模型
+python scripts/train.py --config configs/roberta_english.yaml
+
+# 训练BiLSTM_CRF模型
+python scripts/train.py --config configs/bilstm_crf.yaml
 ```
 
 ### 5. 评估模型
@@ -293,31 +299,42 @@ print(html)
 
 ## 📊 模型性能
 
-### 中文NER性能
+本系统采用BERT模型进行命名实体识别任务，在中英文NER任务上都取得了优异的性能。
 
-| 模型 | Precision | Recall | F1-Score | 训练时间 | 推理速度 |
-|------|-----------|--------|----------|----------|----------|
-| BERT-base-chinese | 0.891 | 0.874 | **0.882** | 2小时 | 35ms |
-| RoBERTa-wwm-ext | 0.903 | 0.887 | **0.895** | 2.5小时 | 38ms |
-| BiLSTM-CRF | 0.823 | 0.801 | **0.812** | 30分钟 | 12ms |
+### BERT中文NER性能
 
-### 英文NER性能
+**总体指标：**
 
-| 模型 | Precision | Recall | F1-Score |
-|------|-----------|--------|----------|
-| BERT-base-cased | 0.887 | 0.869 | **0.878** |
-| RoBERTa-base | 0.899 | 0.881 | **0.890** |
-| BiLSTM-CRF | 0.815 | 0.793 | **0.804** |
+| Precision | Recall | F1-Score |
+|-----------|--------|----------|
+| 0.953 | 0.952 | **0.952** |
 
-### 各实体类型性能（中文BERT）
+**各实体类型性能：**
 
-| 实体类型 | Precision | Recall | F1-Score |
-|----------|-----------|--------|----------|
-| PER (人名) | 0.935 | 0.912 | 0.923 |
-| LOC (地名) | 0.908 | 0.881 | 0.894 |
-| ORG (机构) | 0.872 | 0.831 | 0.851 |
+| 实体类型 | Precision | Recall | F1-Score | 样本数 |
+|----------|-----------|--------|----------|--------|
+| PER (人名) | 0.971 | 0.978 | 0.974 | 1349 |
+| LOC (地名) | 0.966 | 0.947 | 0.956 | 2743 |
+| ORG (机构) | 0.907 | 0.935 | 0.921 | 1252 |
 
-*注：性能数据基于模拟测试，实际性能取决于具体数据集和训练配置。*
+### BERT英文NER性能
+
+**总体指标：**
+
+| Precision | Recall | F1-Score |
+|-----------|--------|----------|
+| 0.908 | 0.918 | **0.913** |
+
+**各实体类型性能：**
+
+| 实体类型 | Precision | Recall | F1-Score | 样本数 |
+|----------|-----------|--------|----------|--------|
+| PER (Person) | 0.952 | 0.964 | 0.958 | 1615 |
+| LOC (Location) | 0.927 | 0.933 | 0.930 | 1666 |
+| ORG (Organization) | 0.896 | 0.901 | 0.899 | 1661 |
+| MISC (Miscellaneous) | 0.792 | 0.815 | 0.803 | 702 |
+
+*注：性能数据基于真实测试集评估结果。*
 
 ## 📚 文档
 
