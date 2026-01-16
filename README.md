@@ -32,7 +32,7 @@
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/your-username/nlp_coursework.git
+git clone https://github.com/HideOnBushQWQ/nlp_coursework.git
 cd nlp_coursework
 ```
 
