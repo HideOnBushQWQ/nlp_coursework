@@ -47,6 +47,7 @@ pip install -r requirements.txt
 将数据放置在`data/raw/`目录下：
 - 中文数据：`data/raw/chinese/`
 - 英文数据：`data/raw/english/`
+- `python download_datasets.p` 下载数据
 
 数据格式（CoNLL格式）：
 ```
@@ -100,8 +101,8 @@ python scripts/predict.py \
     --model_path experiments/bert_chinese/best_model \
     --model_type bert \
     --pretrained_model bert-base-chinese \
-    --input_file data/test.txt \
-    --output_file results/predictions.json
+    --input_file data/batch_test_chinese.txt \
+    --output_file results/batch_predictions_chinese.json
 ```
 
 ## 📁 项目结构
@@ -397,36 +398,12 @@ final_pred = vote(predictions)
 
 系统可扩展支持多GPU分布式训练，使用PyTorch的`DistributedDataParallel`。
 
-## 🤝 贡献指南
-
-欢迎贡献代码、报告问题或提出建议！
-
-1. Fork本项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启Pull Request
-
-## 📄 许可证
-
-本项目采用MIT许可证 - 详见 [LICENSE](LICENSE) 文件
-
-## 👥 作者
-
-- NLP Coursework Team
-
 ## 🙏 致谢
 
 - [Hugging Face Transformers](https://github.com/huggingface/transformers)
 - [PyTorch](https://pytorch.org/)
 - [seqeval](https://github.com/chakki-works/seqeval)
 - [pytorch-crf](https://github.com/kmkurn/pytorch-crf)
-
-## 📮 联系方式
-
-如有问题或建议，请：
-- 提交Issue
-- 发送邮件至：your-email@example.com
 
 ## 🔗 相关链接
 
@@ -435,5 +412,3 @@ final_pred = vote(predictions)
 - [MSRA NER数据集](https://github.com/lemonhu/NER-BERT-pytorch/tree/master/data)
 
 ---
-
-⭐ 如果这个项目对你有帮助，请给一个Star！

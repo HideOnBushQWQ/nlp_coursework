@@ -7,10 +7,17 @@ import yaml
 import json
 import logging
 import os
+import sys
+from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
-from transformers import BertTokenizer, RobertaTokenizer
+from transformers import BertTokenizerFast, RobertaTokenizerFast
+
+# 确保项目根目录在 Python 搜索路径中，方便直接运行 scripts 下的脚本
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data_preprocessing import CoNLLDatasetLoader, NERDataset, LabelEncoder
 from src.models import BertNER, RobertaNER
@@ -22,6 +29,19 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def to_python_type(obj):
+    """
+    Recursively convert numpy types to native Python types
+    """
+    if isinstance(obj, dict):
+        return {k: to_python_type(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [to_python_type(v) for v in obj]
+    elif hasattr(obj, "item"):
+        return obj.item()   # numpy scalar -> python scalar
+    else:
+        return obj
 
 
 def main():
@@ -46,12 +66,12 @@ def main():
     device = args.device if torch.cuda.is_available() else 'cpu'
     logger.info(f"Using device: {device}")
 
-    # 加载tokenizer
+    # 加载fast tokenizer（支持 word_ids，用于对齐标签）
     if config['model']['type'] == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(config['model']['pretrained_model'])
+        tokenizer = BertTokenizerFast.from_pretrained(config['model']['pretrained_model'])
         model_class = BertNER
     elif config['model']['type'] == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(config['model']['pretrained_model'])
+        tokenizer = RobertaTokenizerFast.from_pretrained(config['model']['pretrained_model'])
         model_class = RobertaNER
     else:
         raise ValueError(f"Model type {config['model']['type']} not supported")
@@ -82,7 +102,8 @@ def main():
 
     # 加载模型
     logger.info(f"Loading model from {args.model_path}")
-    model = model_class.from_pretrained(args.model_path, device=device)
+    model = model_class.from_pretrained(args.model_path)
+    model.to(device)
     model.eval()
 
     # 评估
@@ -132,7 +153,7 @@ def main():
     # 保存结果
     if args.output_file:
         with open(args.output_file, 'w', encoding='utf-8') as f:
-            json.dump(metrics, f, ensure_ascii=False, indent=2)
+            json.dump(to_python_type(metrics), f, ensure_ascii=False, indent=2)
         logger.info(f"Detailed results saved to {args.output_file}")
 
 

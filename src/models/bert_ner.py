@@ -83,6 +83,18 @@ class BertNER(BaseNERModel):
             if labels is not None:
                 # 创建mask（排除padding和特殊标签-100）
                 mask = (labels != -100) & (attention_mask == 1)
+                
+                # CRF要求：第一个和最后一个有效时间步的mask必须全部为1
+                # 确保每个样本的第一个有效位置（通常是[CLS]）的mask为1
+                batch_size = mask.size(0)
+                for i in range(batch_size):
+                    valid_indices = mask[i].nonzero(as_tuple=True)[0]
+                    if len(valid_indices) > 0:
+                        # 确保第一个有效位置的mask为1
+                        mask[i, valid_indices[0]] = True
+                        # 确保最后一个有效位置的mask为1
+                        mask[i, valid_indices[-1]] = True
+                
                 # 将-100替换为0（CRF不接受负数标签）
                 labels_for_crf = labels.clone()
                 labels_for_crf[labels == -100] = 0

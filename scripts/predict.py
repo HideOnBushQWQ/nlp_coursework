@@ -5,9 +5,16 @@
 import argparse
 import json
 import os
+import sys
+from pathlib import Path
 
 import torch
-from transformers import BertTokenizer, RobertaTokenizer
+from transformers import BertTokenizerFast, RobertaTokenizerFast
+
+# 确保项目根目录在 Python 搜索路径中，方便直接运行 scripts 下的脚本
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.models import BertNER, RobertaNER, BiLSTMCRF
 from src.inference import NERPredictor
@@ -37,12 +44,12 @@ def main():
     device = args.device if torch.cuda.is_available() else 'cpu'
     print(f"Using device: {device}")
 
-    # 加载tokenizer
+    # 加载fast tokenizer（支持 word_ids，用于对齐标签）
     if args.model_type == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(args.pretrained_model)
+        tokenizer = BertTokenizerFast.from_pretrained(args.pretrained_model)
         model_class = BertNER
     elif args.model_type == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(args.pretrained_model)
+        tokenizer = RobertaTokenizerFast.from_pretrained(args.pretrained_model)
         model_class = RobertaNER
     else:
         raise ValueError(f"Model type {args.model_type} not supported for prediction yet")

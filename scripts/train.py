@@ -6,10 +6,17 @@ import argparse
 import yaml
 import logging
 import os
+import sys
+from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
-from transformers import BertTokenizer, RobertaTokenizer
+from transformers import BertTokenizerFast, RobertaTokenizerFast
+
+# 确保项目根目录在 Python 搜索路径中，方便直接运行 scripts 下的脚本
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data_preprocessing import CoNLLDatasetLoader, NERDataset, LabelEncoder, build_vocab, BiLSTMDataset
 from src.models import BertNER, RobertaNER, BiLSTMCRF
@@ -126,7 +133,15 @@ def main():
     # 设置设备
     if args.device:
         config['device'] = args.device
-    device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+    
+    # 确保设备设置正确：如果配置中指定了cuda但不可用，则回退到cpu
+    requested_device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+    if requested_device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA requested but not available. Falling back to CPU.")
+        device = 'cpu'
+    else:
+        device = requested_device
+    
     logger.info(f"Using device: {device}")
 
     # 设置随机种子
@@ -140,12 +155,12 @@ def main():
     vocab = None
 
     if config['model']['type'] in ['bert', 'roberta']:
-        # 加载tokenizer
+        # 加载fast tokenizer（支持 word_ids，用于对齐标签）
         if config['model']['type'] == 'bert':
-            tokenizer = BertTokenizer.from_pretrained(config['model']['pretrained_model'])
+            tokenizer = BertTokenizerFast.from_pretrained(config['model']['pretrained_model'])
         else:
-            tokenizer = RobertaTokenizer.from_pretrained(config['model']['pretrained_model'])
-        logger.info(f"Loaded tokenizer: {config['model']['pretrained_model']}")
+            tokenizer = RobertaTokenizerFast.from_pretrained(config['model']['pretrained_model'])
+        logger.info(f"Loaded fast tokenizer: {config['model']['pretrained_model']}")
 
     # 加载数据
     train_loader, val_loader, label_encoder = load_data(config, tokenizer, vocab)

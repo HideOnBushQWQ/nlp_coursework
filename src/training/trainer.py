@@ -80,11 +80,21 @@ class NERTrainer:
         """创建优化器"""
         # 分组参数：预训练模型参数 vs 新增参数
         no_decay = ['bias', 'LayerNorm.weight', 'LayerNorm.bias']
+        
+        # 确保数值类型正确（YAML可能读取为字符串）
+        learning_rate = self.config['training'].get('learning_rate', 3e-5)
+        if isinstance(learning_rate, str):
+            learning_rate = float(learning_rate)
+        
+        weight_decay = self.config['training'].get('weight_decay', 0.01)
+        if isinstance(weight_decay, str):
+            weight_decay = float(weight_decay)
+        
         optimizer_grouped_parameters = [
             {
                 'params': [p for n, p in self.model.named_parameters()
                            if not any(nd in n for nd in no_decay) and p.requires_grad],
-                'weight_decay': self.config['training'].get('weight_decay', 0.01)
+                'weight_decay': weight_decay
             },
             {
                 'params': [p for n, p in self.model.named_parameters()
@@ -95,7 +105,7 @@ class NERTrainer:
 
         optimizer = AdamW(
             optimizer_grouped_parameters,
-            lr=self.config['training'].get('learning_rate', 3e-5),
+            lr=learning_rate,
             eps=1e-8
         )
         return optimizer
@@ -103,7 +113,13 @@ class NERTrainer:
     def _create_scheduler(self):
         """创建学习率调度器"""
         num_training_steps = len(self.train_loader) * self.config['training']['num_epochs']
-        num_warmup_steps = int(num_training_steps * self.config['training'].get('warmup_ratio', 0.1))
+        
+        # 确保warmup_ratio是浮点数
+        warmup_ratio = self.config['training'].get('warmup_ratio', 0.1)
+        if isinstance(warmup_ratio, str):
+            warmup_ratio = float(warmup_ratio)
+        
+        num_warmup_steps = int(num_training_steps * warmup_ratio)
 
         scheduler = get_linear_schedule_with_warmup(
             self.optimizer,

@@ -189,7 +189,8 @@ class NERDataset(Dataset):
 
         # 对齐标签到子词
         word_ids = encoding.word_ids(batch_index=0)
-        aligned_labels = self._align_labels(tokens, labels, word_ids)
+        input_ids = encoding['input_ids'].squeeze(0).tolist()
+        aligned_labels = self._align_labels(tokens, labels, word_ids, input_ids)
 
         # 转换为tensor
         labels_tensor = torch.tensor(aligned_labels, dtype=torch.long)
@@ -204,28 +205,45 @@ class NERDataset(Dataset):
         self,
         tokens: List[str],
         labels: List[str],
-        word_ids: List[Optional[int]]
+        word_ids: List[Optional[int]],
+        input_ids: List[int]
     ) -> List[int]:
         """
         对齐标签到子词
 
         策略：只保留每个词的第一个子词的标签，其余子词标签设为-100
+        对于[CLS]和[SEP] token，给它们'O'标签（CRF要求第一个和最后一个位置有有效标签）
 
         Args:
             tokens: 原始token列表
             labels: 原始标签列表
             word_ids: tokenizer返回的word_ids
+            input_ids: tokenizer返回的input_ids（用于识别[CLS]和[SEP]）
 
         Returns:
             对齐后的标签ID列表
         """
         aligned_labels = []
         previous_word_id = None
+        
+        # BERT/RoBERTa的特殊token ID（通常是101和102，但可能因模型而异）
+        # 通过检查tokenizer来确定
+        cls_token_id = self.tokenizer.cls_token_id if hasattr(self.tokenizer, 'cls_token_id') else None
+        sep_token_id = self.tokenizer.sep_token_id if hasattr(self.tokenizer, 'sep_token_id') else None
 
-        for word_id in word_ids:
+        for idx, (word_id, token_id) in enumerate(zip(word_ids, input_ids)):
             if word_id is None:
                 # 特殊token（[CLS], [SEP], [PAD]）
-                aligned_labels.append(-100)
+                # 对于[CLS]和[SEP]，给它们'O'标签（CRF要求）
+                if (cls_token_id is not None and token_id == cls_token_id) or \
+                   (sep_token_id is not None and token_id == sep_token_id) or \
+                   (cls_token_id is None and sep_token_id is None and 
+                    (token_id == 101 or token_id == 102)):  # 默认BERT token IDs
+                    # [CLS]或[SEP]：给'O'标签
+                    aligned_labels.append(self.label_encoder.encode('O'))
+                else:
+                    # [PAD]或其他特殊token：设为-100
+                    aligned_labels.append(-100)
             elif word_id != previous_word_id:
                 # 新词的第一个子词：使用原标签
                 if word_id < len(labels):
