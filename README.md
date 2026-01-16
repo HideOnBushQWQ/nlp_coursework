@@ -47,7 +47,7 @@ pip install -r requirements.txt
 将数据放置在`data/raw/`目录下：
 - 中文数据：`data/raw/chinese/`
 - 英文数据：`data/raw/english/`
-- `python download_datasets.p` 下载数据
+- `python download_datasets.py` 下载数据
 
 数据格式（CoNLL格式）：
 ```
@@ -86,29 +86,17 @@ python scripts/train.py --config configs/bilstm_crf.yaml
 ### 5. 评估模型
 
 ```bash
-python scripts/evaluate.py \
-    --model_path experiments/bert_chinese/best_model \
-    --config configs/bert_chinese.yaml \
-    --output_file results/eval_results.json
+python scripts/evaluate.py --model_path experiments/bert_chinese/best_model --config configs/bert_chinese.yaml --output_file results/eval_results.json
 ```
 
 ### 6. 使用模型推理
 
 ```bash
 # 单句推理
-python scripts/predict.py \
-    --model_path experiments/bert_chinese/best_model \
-    --model_type bert \
-    --pretrained_model bert-base-chinese \
-    --text "张三在北京大学工作"
+python scripts/predict.py --model_path experiments/bert_chinese/best_model --model_type bert --pretrained_model bert-base-chinese --text "张三在北京大学工作"
 
 # 批量推理
-python scripts/predict.py \
-    --model_path experiments/bert_chinese/best_model \
-    --model_type bert \
-    --pretrained_model bert-base-chinese \
-    --input_file data/batch_test_chinese.txt \
-    --output_file results/batch_predictions_chinese.json
+python scripts/predict.py --model_path experiments/bert_chinese/best_model --model_type bert --pretrained_model bert-base-chinese --input_file data/batch_test_chinese.txt --output_file results/batch_predictions_chinese.json
 ```
 
 ## 📁 项目结构
